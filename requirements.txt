@@ -9,3 +9,4 @@ pytesseract
 matplotlib
 numpy
 streamlit-back-camera-input
+tesseract-ocr
