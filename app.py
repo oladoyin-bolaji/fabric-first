@@ -7,7 +7,6 @@ import re
 import os
 import matplotlib.pyplot as plt
 import numpy as np
-from streamlit_back_camera_input import back_camera_input
 
 # UI configurations
 st.set_page_config(page_title="Fabric First",
@@ -66,13 +65,15 @@ with st.sidebar:
 st.info("**Make Informed Clothing Investments with AI-Generated Fabric Insights**", icon="👕")
 st.divider()
 
-# Using back camera input instead of default camera
-st.write("Take a picture of the material composition clothing label - typically found on the inside the garment")
-picture = back_camera_input()
-st.write("TAP YOUR SCREEN TO TAKE A PIC")
+# Enable camera checkbox
+enable_camera = st.checkbox("Allow camera permissions")
+
+# Capture image from webcam
+picture = st.camera_input("Take a picture of the material composition clothing label - typically found on the inside the garment", disabled=not enable_camera)
 
 if picture:
     img = Image.open(io.BytesIO(picture.getvalue()))
+    # st.image(img, caption="Captured Image", use_container_width=True)
 
     # Convert image to bytes
     img_byte_arr = io.BytesIO()
@@ -98,6 +99,8 @@ if picture:
     except Exception as e:
         st.warning(f"Ollama failed: {e}")
         extracted_text = pytesseract.image_to_string(img).strip()
+
+    # Removed the extracted text section as requested
 
     # Proceed with analysis if text was extracted
     if extracted_text:
@@ -136,6 +139,8 @@ Do not include percentages, just the material names.
         identified_materials = materials_response.get("message", {}).get("content", "").strip()
         identified_materials_list = [m.strip() for m in identified_materials.split(',')]
         
+        # Removed the summarized text section as requested
+
         # Extract scores using regex
         scores = re.findall(r"(\d+)/10", summary_text)
 
