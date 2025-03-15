@@ -4,4 +4,5 @@ Pillow
 tesseract
 matplotlib
 numpy
-
+tesseract-ocr
+libtesseract-dev
