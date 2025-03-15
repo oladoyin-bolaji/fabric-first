@@ -58,7 +58,7 @@ with st.sidebar:
 
     st.divider()
     # Add a link to your GitHub profile or project repository
-    st.write("[Check out my GitHub for more 👩🏿‍💻](https://github.com/your-username)")
+    st.write("[Check out my GitHub for more about this project 👩🏿‍💻](https://github.com/oladoyin-bolaji/fabric-first/tree/main)")
 
 # Streamlit app title
 st.info("**Make Informed Clothing Investments with AI-Generated Fabric Insights**", icon="👕")
@@ -71,12 +71,19 @@ camera_tab, upload_tab = st.tabs(["📸 Camera", "📤 Upload"])
 
 picture = None
 
-# Camera tab 
+# Camera tab
 with camera_tab:
     try:
-        camera_picture = st.camera_input("Take a photo")
-        if camera_picture:
-            picture = camera_picture
+        # Asking for camera permissions
+        enable_camera = st.checkbox("Allow camera permissions")
+        if enable_camera:
+            camera_picture = st.camera_input("Take a photo")
+            if camera_picture:
+                picture = camera_picture
+            else:
+                st.info("Please allow the camera access in your browser settings.")
+        else:
+            st.info("Enable camera access to take a photo.")
     except Exception as e:
         st.error(f"Camera error: {str(e)}")
         st.info("Please use the Upload tab instead")
@@ -86,6 +93,7 @@ with upload_tab:
     uploaded_picture = st.file_uploader("Upload a photo of the clothing label", type=["jpg", "jpeg", "png"])
     if uploaded_picture:
         picture = uploaded_picture
+        st.image(picture)
 
 # Processing
 if picture:
