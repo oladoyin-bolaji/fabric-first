@@ -35,9 +35,8 @@ st.markdown("""
 
 with st.sidebar:
     # Add a brief description of the project
-    st.markdown("""
-    *Welcome to Fabric First!*
-             
+    st.subheader("*Welcome to Fabric First!*")
+    st.markdown("""        
     > This project helps you discover the **sustainability** and **durability** of your clothing, just by analyzing the label . 
 
     > Using cutting-edge AI, we provide insights into material composition, environmental impact, and whether this piece is a smart **investment** for your wardrobe !
@@ -65,42 +64,63 @@ with st.sidebar:
 st.info("**Make Informed Clothing Investments with AI-Generated Fabric Insights**", icon="👕")
 st.divider()
 
-# Enable camera checkbox
-enable_camera = st.checkbox("Allow camera permissions")
 
-# Capture image from webcam
-picture = st.camera_input("Take a picture of the material composition clothing label - typically found on the inside the garment", disabled=not enable_camera)
+# Camera and file upload options
+st.write("Take a picture or upload an image of the material composition clothing label - typically found on the inside the garment")
+camera_tab, upload_tab = st.tabs(["📸 Camera", "📤 Upload"])
 
-if picture:
-    img = Image.open(io.BytesIO(picture.getvalue()))
-    # st.image(img, caption="Captured Image", use_container_width=True)
+picture = None
 
-    # Convert image to bytes
-    img_byte_arr = io.BytesIO()
-    img.save(img_byte_arr, format="PNG")
-    img_bytes = img_byte_arr.getvalue()
-
-    # Try extracting text using Ollama
+# Camera tab 
+with camera_tab:
     try:
-        with st.spinner("Analysing Materials"):
-            response = ollama.chat(
-                model="llama3.2-vision",
-                messages=[{
-                    "role": "user",
-                    "content": "Extract the text from this image and the material composition of the clothing item",
-                    "images": [img_bytes]
-                }]
-            )
-            extracted_text = response.get("message", {}).get("content", "").strip()
+        camera_picture = st.camera_input("Take a photo")
+        if camera_picture:
+            picture = camera_picture
+    except Exception as e:
+        st.error(f"Camera error: {str(e)}")
+        st.info("Please use the Upload tab instead")
 
-            if not extracted_text:
-                raise ValueError("Ollama failed to extract text, using OCR fallback...")
+# File Upload
+with upload_tab:
+    uploaded_picture = st.file_uploader("Upload a photo of the clothing label", type=["jpg", "jpeg", "png"])
+    if uploaded_picture:
+        picture = uploaded_picture
+
+# Processing
+if picture:
+    try:
+        img = Image.open(io.BytesIO(picture.getvalue()))
+        
+
+        # Convert image to bytes
+        img_byte_arr = io.BytesIO()
+        img.save(img_byte_arr, format="PNG")
+        img_bytes = img_byte_arr.getvalue()
+
+        # Try extracting text using Ollama
+        try:
+            with st.spinner("Analysing Materials"):
+                response = ollama.chat(
+                    model="llama3.2-vision",
+                    messages=[{
+                        "role": "user",
+                        "content": "Extract the text from this image and the material composition of the clothing item",
+                        "images": [img_bytes]
+                    }]
+                )
+                extracted_text = response.get("message", {}).get("content", "").strip()
+
+                if not extracted_text:
+                    raise ValueError("Ollama failed to extract text, using OCR fallback...")
+
+        except Exception as e:
+            st.warning(f"Ollama failed: {e}")
+            extracted_text = pytesseract.image_to_string(img).strip()
+
 
     except Exception as e:
-        st.warning(f"Ollama failed: {e}")
-        extracted_text = pytesseract.image_to_string(img).strip()
-
-    # Removed the extracted text section as requested
+        st.error(f"Error processing the image: {str(e)}")
 
     # Proceed with analysis if text was extracted
     if extracted_text:
@@ -138,10 +158,9 @@ Do not include percentages, just the material names.
         )
         identified_materials = materials_response.get("message", {}).get("content", "").strip()
         identified_materials_list = [m.strip() for m in identified_materials.split(',')]
-        
-        # Removed the summarized text section as requested
+    
 
-        # Extract scores using regex
+        # Extract scores 
         scores = re.findall(r"(\d+)/10", summary_text)
 
         if len(scores) >= 3:
@@ -151,21 +170,17 @@ Do not include percentages, just the material names.
             
             # Calculate Investment Value Score (average of sustainability and durability)
             investment_value = (sustainability_score + durability_score) / 2 * 10  # Convert to percentage
-            
-            # Changed flow as requested: Investment Value first
             st.divider()
             
-            # Display Investment Value Score section
+            # Investment Value Score section
             st.subheader("Investment Value")
-            
-            # Display Investment Value Rating as a metric
             st.metric("Investment Value Rating", f"{investment_value:.1f}%")
             
-            # Create pie charts for sustainability and durability scores instead of bar charts
+            # Pie charts for sustainability and durability scores
             col1, col2 = st.columns(2)
             
             with col1:
-                # Create sustainability score pie chart
+                # Sustainability score pie chart
                 fig, ax = plt.subplots(figsize=(6, 4))
                 ax.pie([sustainability_score, 10-sustainability_score], 
                        labels=[f"Score: {sustainability_score}/10", ""], 
@@ -173,12 +188,11 @@ Do not include percentages, just the material names.
                        startangle=90,
                        wedgeprops={'edgecolor': 'white', 'linewidth': 2})
                 ax.set_title('Environmental Sustainability Score')
-                # Equal aspect ratio ensures that pie is drawn as a circle
                 ax.axis('equal')
                 st.pyplot(fig)
             
             with col2:
-                # Create durability score pie chart
+                # Durability score pie chart
                 fig, ax = plt.subplots(figsize=(6, 4))
                 ax.pie([durability_score, 10-durability_score], 
                        labels=[f"Score: {durability_score}/10", ""], 
@@ -186,7 +200,6 @@ Do not include percentages, just the material names.
                        startangle=90,
                        wedgeprops={'edgecolor': 'white', 'linewidth': 2})
                 ax.set_title('Material Durability Score')
-                # Equal aspect ratio ensures that pie is drawn as a circle
                 ax.axis('equal')
                 st.pyplot(fig)
 
@@ -216,7 +229,7 @@ Keep your response concise but informative.
             # Material Breakdown - only for identified materials
             st.subheader("The Fabric Breakdown")
             
-            # Master dictionary of materials
+            # Dictionary of materials
             materials = {
                 "Cotton": {
                     "description": "Cotton is one of the most widely used natural fibers, prized for its softness, breathability, and comfort. It's a renewable fiber that is highly absorbent, making it a popular choice for casual wear. Cotton fabrics are generally durable and easy to care for but may shrink after washing.",
