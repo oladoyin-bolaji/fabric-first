@@ -2,7 +2,7 @@ import streamlit as st
 import ollama
 from PIL import Image
 import io
-import pytesseract
+import tesseract
 import re
 import os
 import matplotlib.pyplot as plt
