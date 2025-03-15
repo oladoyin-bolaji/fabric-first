@@ -1,12 +1,7 @@
 streamlit
 ollama
-pillow
-pytesseract
-streamlit
-ollama
 Pillow
 pytesseract
 matplotlib
 numpy
 streamlit-back-camera-input
-tesseract-ocr
