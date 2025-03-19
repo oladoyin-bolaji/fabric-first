@@ -1,7 +1,5 @@
 streamlit
 ollama
 Pillow
-pytesseract
 matplotlib
 numpy
-tesseract-ocr 
