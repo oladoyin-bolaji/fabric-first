@@ -57,7 +57,6 @@ with st.sidebar:
 
     st.divider()
     # Add a link to your GitHub profile or project repository
-    st.write("[Check out my GitHub for more about this project 👩🏿‍💻](https://github.com/oladoyin-bolaji/fabric-first/tree/main)")
     st.write("[Check out my GitHub for this project! 👩🏿‍💻](https://github.com/oladoyin-bolaji/fabric-first/tree/main)")
 
 # Streamlit app title
